@@ -17,7 +17,7 @@ def index(request):
     if request.user.is_student:
         return render(request, 'info/homepage.html')
     return render(request, 'info/logout.html')
-
+ 
 
 @login_required()
 def attendance(request, stud_id):
@@ -112,10 +112,32 @@ def t_attendance(request, ass_c_id):
 
 
 @login_required()
+# def edit_att(request, ass_c_id):
+#     assc = get_object_or_404(AttendanceClass, id=ass_c_id)
+#     cr = assc.assign.course
+#     att_list = Attendance.objects.filter(attendanceclass=assc, course=cr)
+#     context = {
+#         'assc': assc,
+#         'att_list': att_list,
+#     }
+#     return render(request, 'info/t_edit_att.html', context)
 def edit_att(request, ass_c_id):
     assc = get_object_or_404(AttendanceClass, id=ass_c_id)
     cr = assc.assign.course
-    att_list = Attendance.objects.filter(attendanceclass=assc, course=cr)
+    cl = assc.assign.class_id
+    students = cl.student_set.all()
+
+    att_list = []
+
+    for student in students:
+        att, created = Attendance.objects.get_or_create(
+            attendanceclass=assc,
+            course=cr,
+            student=student,
+            defaults={'status': True, 'date': assc.date}
+        )
+        att_list.append(att)
+
     context = {
         'assc': assc,
         'att_list': att_list,
